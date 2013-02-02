@@ -1,83 +1,89 @@
 /*
 
-	Supersized - Fullscreen Slideshow jQuery Plugin
-	Version : 3.2.7
-	Site	: www.buildinternet.com/project/supersized
+Supersized - Fullscreen Slideshow jQuery Plugin
+Version : 3.2.7
+Site	: www.buildinternet.com/project/supersized
 
-	Author	: Sam Dunn
-	Company : One Mighty Roar (www.onemightyroar.com)
-	License : MIT License / GPL License
+Author	: Sam Dunn
+Company : One Mighty Roar (www.onemightyroar.com)
+License : MIT License / GPL License
 
 */
+// DP *I*
+// Evita conflitti con mootools
+// http://api.jquery.com/jQuery.noConflict/
+jQuery.noConflict();
+// DP *F*
 
 (function($){
 
 	/* Place Supersized Elements
 	----------------------------*/
 	$(document).ready(function() {
-//		$('body').append('<div id="supersized-loader"></div><ul id="supersized"></ul>');
-//		$('#main').append('<div id="supersized-loader"></div><ul id="supersized"></ul>');
+		//		$('body').append('<div id="supersized-loader"></div><ul id="supersized"></ul>');
+		//		$('#main').append('<div id="supersized-loader"></div><ul id="supersized"></ul>');
 	});
 
 
-    $.supersized = function(options){
+	$.supersized = function(options){
 
-    	/* Variables
+		/* Variables
 		----------------------------*/
-    	var el = '#supersized',
-        	base = this;
-        // Access to jQuery and DOM versions of element
-        base.$el = $(el);
-        base.el = el;
-        vars = $.supersized.vars;
-        // Add a reverse reference to the DOM object
-        base.$el.data("supersized", base);
-        api = base.$el.data('supersized');
+		var el = '#supersized',
+		base = this;
+		// Access to jQuery and DOM versions of element
+		base.$el = $(el);
+		base.el = el;
+		vars = $.supersized.vars;
+		// Add a reverse reference to the DOM object
+		base.$el.data("supersized", base);
+		api = base.$el.data('supersized');
 
 		base.init = function(){
-        	// Combine options and vars
-        	$.supersized.vars = $.extend($.supersized.vars, $.supersized.themeVars);
-        	$.supersized.vars.options = $.extend({},$.supersized.defaultOptions, $.supersized.themeOptions, options);
-            base.options = $.supersized.vars.options;
+			// Combine options and vars
+			$.supersized.vars = $.extend($.supersized.vars, $.supersized.themeVars);
+			$.supersized.vars.options = $.extend({},$.supersized.defaultOptions, $.supersized.themeOptions, options);
+			base.options = $.supersized.vars.options;
 
-            base._build();
-        };
+			base._build();
+		};
 
-// DP *I*
-// Deep-link
-// Si applica a: cambio dell'hash manuale dalla barra dell'URL
-// Individuazione parametri per deep-link e caricamento immagine associata se presente
-  $(window).bind( 'hashchange', function(e) {
-	// Get the hash (fragment) as a string, with any leading # removed. Note that
-	// in jQuery 1.4, you should use e.fragment instead of $.param.fragment().
-	var url = $.param.fragment();
-	if (url)
-	{
-		api.goTo(url);
-		window.location.href = '#' + url;
-	}
-});
-// DP *F*
+		// DP *I*
+		// Deep-link
+		// Si applica a: cambio dell'hash manuale dalla barra dell'URL
+		// Individuazione parametri per deep-link e caricamento immagine associata se presente
+		$(window).bind( 'hashchange', function(e) {
+			// Get the hash (fragment) as a string, with any leading # removed. Note that
+			// in jQuery 1.4, you should use e.fragment instead of $.param.fragment().
+			var url = $.param.fragment();
+			if (url)
+				{
+				api.goTo(url);
+				window.location.href = '#' + url;
+			}
+		});
+		// DP *F*
 
-        /* Build Elements
+		/* Build Elements
 		----------------------------*/
-        base._build = function(){
-        	// Add in slide markers
-        	var thisSlide = 0,
-        		slideSet = '',
-				markers = '',
-				markerContent,
-				thumbMarkers = '',
-				thumbImage;
+		base._build = function(){
+			// Add in slide markers
+			var thisSlide = 0,
+			slideSet = '',
+			markers = '',
+			markerContent,
+			thumbMarkers = '',
+			thumbImage;
 
 			while(thisSlide <= base.options.slides.length-1){
+
 				//Determine slide link content
 				switch(base.options.slide_links){
 					case 'num':
 						markerContent = thisSlide;
 						break;
 					case 'name':
-						markerContent = base.options.slides[thisSlide].title;
+						markerContent = base.options.slides[thisSlide].summary;
 						break;
 					case 'blank':
 						markerContent = '';
@@ -86,34 +92,46 @@
 
 				slideSet = slideSet+'<li class="slide-'+thisSlide+'"></li>';
 
-// DP *I*
-// Deep-link
+				// DP *I*
+				// Deep-link
 				//if(thisSlide == base.options.start_slide-1)
 				var start_slide = $.param.fragment() ? $.param.fragment() : 1;
 				if (thisSlide == start_slide - 1)
-// DP *F*
-				{
+					// DP *F*
+					{
 					// Slide links
 					if (base.options.slide_links)
-					{
-					markers = markers+'<li class="slide-link-'+thisSlide+' current-slide"><a>'+markerContent+'</a></li>';
+						{
+						markers = markers+'<li class="slide-link-'+thisSlide+' current-slide"><a>'+markerContent+'</a></li>';
 					}
+					// DP *I* Non carica le miniature su dispositivi mobili (base.$el.width() >= 768);
 					// Slide Thumbnail Links
-					if (base.options.thumb_links)
-					{
-						base.options.slides[thisSlide].thumb ? thumbImage = base.options.slides[thisSlide].thumb : thumbImage = base.options.slides[thisSlide].image;
-						thumbMarkers = thumbMarkers+'<li class="thumb'+thisSlide+' current-thumb"><img src="'+thumbImage+'"/></li>';
+					if (base.options.thumb_links && ($(window).width() >= 768))
+						{
+						if (base.options.slides[thisSlide].seed.indexOf('empty.png') != -1)
+							thumbImage = base.options.slides[thisSlide].seed;
+						else
+							thumbImage = base.options.slides[thisSlide].seed + 's150-c/';
+
+						thumbMarkers = thumbMarkers + '<li class="thumb' + thisSlide + ' current-thumb"><img src="' + thumbImage + '"/></li>';
 					};
 				}
 				else
-				{
-					// Slide links
-					if (base.options.slide_links) markers = markers+'<li class="slide-link-'+thisSlide+'" ><a>'+markerContent+'</a></li>';
-					// Slide Thumbnail Links
-					if (base.options.thumb_links)
 					{
-						base.options.slides[thisSlide].thumb ? thumbImage = base.options.slides[thisSlide].thumb : thumbImage = base.options.slides[thisSlide].image;
-						thumbMarkers = thumbMarkers+'<li class="thumb'+thisSlide+'"><img src="'+thumbImage+'"/></li>';
+					// Slide links
+					if (base.options.slide_links)
+						{
+						markers = markers+'<li class="slide-link-'+thisSlide+'" ><a>'+markerContent+'</a></li>';
+					}
+					// Slide Thumbnail Links
+					if (base.options.thumb_links && ($(window).width() >= 768))
+						{
+						if (base.options.slides[thisSlide].seed.indexOf('empty.png') != -1)
+							thumbImage = base.options.slides[thisSlide].seed;
+						else
+							thumbImage = base.options.slides[thisSlide].seed + 's150-c/';
+
+						thumbMarkers = thumbMarkers + '<li class="thumb' + thisSlide + '"><img src="' + thumbImage + '"/></li>';
 					};
 				}
 				thisSlide++;
@@ -121,44 +139,59 @@
 
 			if (base.options.slide_links) $(vars.slide_list).html(markers);
 
-			if (base.options.thumb_links && vars.thumb_tray.length){
+			if (base.options.thumb_links && vars.thumb_tray.length && ($(window).width() >= 768))
+				{
 				$(vars.thumb_tray).append('<ul id="'+vars.thumb_list.replace('#','')+'">'+thumbMarkers+'</ul>');
 			}
 
 			$(base.el).append(slideSet);
 
 			// Add in thumbnails
-			if (base.options.thumbnail_navigation){
+			if (base.options.thumbnail_navigation)
+				{
 				// Load previous thumbnail
 				vars.current_slide - 1 < 0  ? prevThumb = base.options.slides.length - 1 : prevThumb = vars.current_slide - 1;
-				$(vars.prev_thumb).show().html($("<img/>").attr("src", base.options.slides[prevThumb].image));
+				if (base.options.slides[prevThumb].seed.indexOf('empty.png') != -1)
+					$(vars.prev_thumb).show().html($("<img/>").attr("src", base.options.slides[prevThumb].seed));
+				else
+					$(vars.prev_thumb).show().html($("<img/>").attr("src", base.options.slides[prevThumb].seed + 's150-c/'));
 
 				// Load next thumbnail
 				vars.current_slide == base.options.slides.length - 1 ? nextThumb = 0 : nextThumb = vars.current_slide + 1;
-				$(vars.next_thumb).show().html($("<img/>").attr("src", base.options.slides[nextThumb].image));
+				if (base.options.slides[nextThumb].seed.indexOf('empty.png') != -1)
+					$(vars.next_thumb).show().html($("<img/>").attr("src", base.options.slides[nextThumb].seed));
+				else
+					$(vars.next_thumb).show().html($("<img/>").attr("src", base.options.slides[nextThumb].seed + 's150-c/'));
 			}
 
-            base._start(); // Get things started
-        };
+			base._start(); // Get things started
+		};
 
 
-        /* Initialize
+		/* Initialize
 		----------------------------*/
-    	base._start = function(){
+		base._start = function(){
 
-// DP *I*
-// Deep-link
-/*
+			// DP *I*
+			// Deep-link
+			/*
 			// Determine if starting slide random
 			if (base.options.start_slide){
-				vars.current_slide = base.options.start_slide - 1;
+			vars.current_slide = base.options.start_slide - 1;
 			}else{
-				vars.current_slide = Math.floor(Math.random()*base.options.slides.length);	// Generate random slide number
+			vars.current_slide = Math.floor(Math.random()*base.options.slides.length);	// Generate random slide number
 			}
-*/
+			*/
 			var start_slide = $.param.fragment() ? $.param.fragment() : 1;
 			vars.current_slide = start_slide - 1;
-// DP *F*
+			// DP *F*
+
+			// DP *I*
+			// Calcolo dimensione immagini
+			var actual_width = "w" + document.getElementById('fuertecontainer').offsetWidth + "/";
+			var address;
+			// DP *F*
+
 			// If links should open in new window
 			var linkTarget = base.options.new_window ? ' target="_blank"' : '';
 
@@ -173,7 +206,7 @@
 			if (base.options.random){
 				arr = base.options.slides;
 				for(var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);	// Fisher-Yates shuffle algorithm (jsfromhell.com/array/shuffle)
-			    base.options.slides = arr;
+				base.options.slides = arr;
 			}
 
 			/*-----Load initial set of images-----*/
@@ -182,9 +215,15 @@
 				if(base.options.slides.length > 2){
 					// Set previous image
 					vars.current_slide - 1 < 0  ? loadPrev = base.options.slides.length - 1 : loadPrev = vars.current_slide - 1;	// If slide is 1, load last slide as previous
+
 					var imageLink = (base.options.slides[loadPrev].url) ? "href='" + base.options.slides[loadPrev].url + "'" : "";
 
-					var imgPrev = $('<img src="'+base.options.slides[loadPrev].image+'"/>');
+					// DP *I*
+					// Inserimento dimensione immagine nell'URL
+					if (base.options.slides[loadPrev].seed.indexOf('empty.png') != -1) actual_width = '';
+					address = '<img src="' + base.options.slides[loadPrev].seed + actual_width + '"/>';
+					var imgPrev = $(address);
+					// DP *F*
 					var slidePrev = base.el+' li:eq('+loadPrev+')';
 					imgPrev.appendTo(slidePrev).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading prevslide');
 
@@ -200,7 +239,14 @@
 
 			// Set current image
 			imageLink = (api.getField('url')) ? "href='" + api.getField('url') + "'" : "";
-			var img = $('<img src="'+api.getField('image')+'"/>');
+			// DP *I*
+			// Inserimento dimensione immagine nell'URL
+			//var img = $('<img src="'+api.getField('image')+'"/>');
+			//address = ('<img src="'+api.getField('image')+'"/>').replace("{%width%}", actual_width);
+			if (api.getField('seed').indexOf('empty.png') != -1) actual_width = '';
+			address = ('<img src="' + api.getField('seed') + actual_width + '"/>');
+			var img = $(address);
+			// DP *F*
 
 			var slideCurrent= base.el+' li:eq('+vars.current_slide+')';
 			img.appendTo(slideCurrent).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading activeslide');
@@ -217,7 +263,13 @@
 				vars.current_slide == base.options.slides.length - 1 ? loadNext = 0 : loadNext = vars.current_slide + 1;	// If slide is last, load first slide as next
 				imageLink = (base.options.slides[loadNext].url) ? "href='" + base.options.slides[loadNext].url + "'" : "";
 
-				var imgNext = $('<img src="'+base.options.slides[loadNext].image+'"/>');
+				// DP *I*
+				// Inserimento dimensione immagine nell'URL
+				if (base.options.slides[loadNext].seed.indexOf('empty.png') != -1) actual_width = '';
+				address = ('<img src="' + base.options.slides[loadNext].seed + actual_width + '"/>');
+				var imgNext = $(address);
+				// DP *F*
+
 				var slideNext = base.el+' li:eq('+loadNext+')';
 				imgNext.appendTo(slideNext).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading');
 
@@ -229,11 +281,11 @@
 			/*-----End load initial images-----*/
 
 			//  Hide elements to be faded in
-// DP *I* Rimosso hide
+			// DP *I* Rimosso hide
 			base.$el.css('visibility','hidden');
 			$('.load-item').hide();
-// DP *I*
-    	};
+			// DP *I*
+		};
 
 
 		/* Launch Supersized
@@ -258,12 +310,12 @@
 						clearInterval(vars.slideshow_interval);	// Stop slideshow, prevent buildup
 						base.prevSlide();
 
-					// Right Arrow or Up Arrow
+						// Right Arrow or Up Arrow
 					} else if ((event.keyCode == 39) || (event.keyCode == 38)) {
 						clearInterval(vars.slideshow_interval);	// Stop slideshow, prevent buildup
 						base.nextSlide();
 
-					// Spacebar
+						// Spacebar
 					} else if (event.keyCode == 32 && !vars.hover_pause) {
 						clearInterval(vars.slideshow_interval);	// Stop slideshow, prevent buildup
 						base.playToggle();
@@ -276,17 +328,17 @@
 			if (base.options.slideshow && base.options.pause_hover){
 				$(base.el).hover(function() {
 					if(vars.in_animation) return false;		// Abort if currently animating
-			   			vars.hover_pause = true;	// Mark slideshow paused from hover
-			   			if(!vars.is_paused){
-			   				vars.hover_pause = 'resume';	// It needs to resume afterwards
-			   				base.playToggle();
-			   			}
-			   	}, function() {
+					vars.hover_pause = true;	// Mark slideshow paused from hover
+					if(!vars.is_paused){
+						vars.hover_pause = 'resume';	// It needs to resume afterwards
+						base.playToggle();
+					}
+				}, function() {
 					if(vars.hover_pause == 'resume'){
 						base.playToggle();
 						vars.hover_pause = false;
 					}
-			   	});
+				});
 			}
 
 			if (base.options.slide_links){
@@ -303,7 +355,7 @@
 			}
 
 			// Thumb marker clicked
-			if (base.options.thumb_links){
+			if (base.options.thumb_links && ($(window).width() >= 768)) {
 				$(vars.thumb_list+'> li').click(function(){
 
 					index = $(vars.thumb_list+'> li').index(this);
@@ -317,9 +369,9 @@
 			// Start slideshow if enabled
 			if (base.options.slideshow && base.options.slides.length > 1){
 
-	    		// Start slideshow if autoplay enabled
-	    		if (base.options.autoplay && base.options.slides.length > 1){
-	    			vars.slideshow_interval = setInterval(base.nextSlide, base.options.slide_interval);	// Initiate slide interval
+				// Start slideshow if autoplay enabled
+				if (base.options.autoplay && base.options.slides.length > 1){
+					vars.slideshow_interval = setInterval(base.nextSlide, base.options.slide_interval);	// Initiate slide interval
 				}else{
 					vars.is_paused = true;	// Mark as paused
 				}
@@ -333,28 +385,27 @@
 
 			// Adjust image when browser is resized
 			$(window).resize(function(){
-	    		base.resizeNow();
+				base.resizeNow();
 			});
 
-    	};
+		};
 
 
-        /* Resize Images
+		/* Resize Images
 		----------------------------*/
-		base.resizeNow = function(){
+		base.resizeNow_backup = function(){
 
 			return base.$el.each(function() {
-		  		//  Resize each image seperately
-		  		$('img', base.el).each(function(){
+				//  Resize each image seperately
+				$('img', base.el).each(function(){
 
 					thisSlide = $(this);
 					var ratio = (thisSlide.data('origHeight')/thisSlide.data('origWidth')).toFixed(2);	// Define image ratio
 
 					// Gather browser size
-					// DP *I* Calcolo larghezza e altezza
 					var browserwidth = base.$el.width(),
-						browserheight = base.$el.height(),
-						offset;
+					browserheight = base.$el.height(),
+					offset;
 
 					/*-----Resize Image-----*/
 					if (base.options.fit_always){	// Fit always is enabled
@@ -408,11 +459,11 @@
 							if(thisSlide.width() < browserwidth || thisSlide.width() < base.options.min_width ){
 								if (thisSlide.width() * ratio >= base.options.min_height){
 									thisSlide.width(base.options.min_width);
-						    		thisSlide.height(thisSlide.width() * ratio);
-						    	}else{
-						    		resizeHeight();
-						    	}
-						    }
+									thisSlide.height(thisSlide.width() * ratio);
+								}else{
+									resizeHeight();
+								}
+							}
 						}else{
 							if (base.options.min_height >= browserheight && !base.options.fit_landscape){	// If minimum height needs to be considered
 								if (browserwidth * ratio >= base.options.min_height || (browserwidth * ratio >= base.options.min_height && ratio <= 1)){	// If resizing would push below minimum height or image is a landscape
@@ -423,7 +474,7 @@
 									thisSlide.width(thisSlide.height() / ratio);
 								} else if (thisSlide.width() < browserwidth) {
 									thisSlide.width(browserwidth);
-						    		thisSlide.height(thisSlide.width() * ratio);
+									thisSlide.height(thisSlide.width() * ratio);
 								}
 							}else{	// Otherwise, resize as normal
 								thisSlide.width(browserwidth);
@@ -449,7 +500,7 @@
 									thisSlide.width(browserheight / ratio);
 								} else if (ratio <= 1){		// Else the image is landscape
 									thisSlide.width(base.options.min_width);
-						    		thisSlide.height(thisSlide.width() * ratio);
+									thisSlide.height(thisSlide.width() * ratio);
 								}
 							}else{	// Otherwise, resize as normal
 								thisSlide.height(browserheight);
@@ -492,25 +543,106 @@
 		};
 
 
-        /* Next Slide
+		/* Resize Images
+		----------------------------*/
+		base.resizeNow = function(){
+
+			return base.$el.each(function() {
+				//  Resize each image seperately
+				$('img', base.el).each(function(){
+
+					thisSlide = $(this);
+					//var ratio = (thisSlide.data('origHeight') / thisSlide.data('origWidth')).toFixed(2);
+					// width, height, clientWidth, clientHeight, naturalWidth, naturalHeight
+					// naturalWidth and naturalHeight are not supported by IE 7 and 8, so we can't use them
+					/*
+					var original_width = this.naturalWidth;
+					var original_height = this.naturalHeight;
+					*/
+					var original_width = this.width;
+					var original_height = this.height;
+					var ratio = original_height / original_width;
+
+					// Gather browser size
+					// DP *I* Calcolo larghezza e altezza
+					var browserwidth = base.$el.width();
+					var browserheight = base.$el.height();
+					// Altezza calcolata in base alle proporzioni dell'aspetto + 42 pixel della barra semitrasparente in basso
+					var h = browserwidth * ratio;
+					thisSlide.width(browserwidth);
+					thisSlide.height(h);
+
+					// classList is html5 so we can't use it.
+					/*
+					for (var i = 0; i < this.parentElement.parentElement.classList.length; ++i)
+					{
+					if (this.parentElement.parentElement.classList[i] === 'activeslide')
+					{
+					var container = document.getElementById('fuertecontainer');
+					container.style.height = h + 'px';
+					}
+					}
+					*/
+					if ($(this.parentElement.parentElement).hasClass('activeslide'))
+						{
+						var container = document.getElementById('fuertecontainer');
+						container.style.height = h + 'px';
+					}
+
+
+					/*-----End Resize Functions-----*/
+
+					if (thisSlide.parents('li').hasClass('image-loading')){
+						$('.image-loading').removeClass('image-loading');
+					}
+
+					// Horizontally Center
+					if (base.options.horizontal_center){
+						$(this).css('left', (browserwidth - $(this).width())/2);
+					}
+
+					// Vertically Center
+					if (base.options.vertical_center){
+						$(this).css('top', (browserheight - $(this).height())/2);
+					}
+
+				});
+
+				// Basic image drag and right click protection
+				if (base.options.image_protect){
+
+					$('img', base.el).bind("contextmenu mousedown",function(){
+						return false;
+					});
+
+				}
+
+				return false;
+
+			});
+
+		};
+
+
+		/* Next Slide
 		----------------------------*/
 		base.nextSlide = function(){
 
 			if(vars.in_animation || !api.options.slideshow) return false;		// Abort if currently animating
-				else vars.in_animation = true;		// Otherwise set animation marker
+			else vars.in_animation = true;		// Otherwise set animation marker
 
-		    clearInterval(vars.slideshow_interval);	// Stop slideshow
+			clearInterval(vars.slideshow_interval);	// Stop slideshow
 
-		    var slides = base.options.slides,					// Pull in slides array
-				liveslide = base.$el.find('.activeslide');		// Find active slide
-				$('.prevslide').removeClass('prevslide');
-				liveslide.removeClass('activeslide').addClass('prevslide');	// Remove active class & update previous slide
+			var slides = base.options.slides,					// Pull in slides array
+			liveslide = base.$el.find('.activeslide');		// Find active slide
+			$('.prevslide').removeClass('prevslide');
+			liveslide.removeClass('activeslide').addClass('prevslide');	// Remove active class & update previous slide
 
 			// Get the slide number of new slide
 			vars.current_slide + 1 == base.options.slides.length ? vars.current_slide = 0 : vars.current_slide++;
 
-		    var nextslide = $(base.el+' li:eq('+vars.current_slide+')'),
-		    	prevslide = base.$el.find('.prevslide');
+			var nextslide = $(base.el+' li:eq('+vars.current_slide+')'),
+			prevslide = base.$el.find('.prevslide');
 
 			// If hybrid mode is on drop quality for transition
 			if (base.options.performance == 1) base.$el.removeClass('quality').addClass('speed');
@@ -529,7 +661,13 @@
 				var linkTarget = base.options.new_window ? ' target="_blank"' : '';
 
 				imageLink = (base.options.slides[loadSlide].url) ? "href='" + base.options.slides[loadSlide].url + "'" : "";	// If link exists, build it
-				var img = $('<img src="'+base.options.slides[loadSlide].image+'"/>');
+				// DP *I*
+				// Inserimento dimensione immagine nell'URL
+				var actual_width = "w" + document.getElementById('fuertecontainer').offsetWidth + "/";
+				if (base.options.slides[loadSlide].seed.indexOf('empty.png') != -1) actual_width = '';
+				var address = ('<img src="' + base.options.slides[loadSlide].seed + actual_width + '"/>');
+				var img = $(address);
+				// DP *F*
 
 				img.appendTo(targetList).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading').css('visibility','hidden');
 
@@ -540,16 +678,22 @@
 			};
 
 			// Update thumbnails (if enabled)
-			if (base.options.thumbnail_navigation == 1){
-
+			if (base.options.thumbnail_navigation == 1)
+				{
 				// Load previous thumbnail
 				vars.current_slide - 1 < 0  ? prevThumb = base.options.slides.length - 1 : prevThumb = vars.current_slide - 1;
-				$(vars.prev_thumb).html($("<img/>").attr("src", base.options.slides[prevThumb].image));
+				if (base.options.slides[prevThumb].seed.indexOf('empty.png') != -1)
+					$(vars.prev_thumb).html($("<img/>").attr("src", base.options.slides[prevThumb].seed));
+				else
+					$(vars.prev_thumb).html($("<img/>").attr("src", base.options.slides[prevThumb].seed + 's150-c/'));
+
 
 				// Load next thumbnail
 				nextThumb = loadSlide;
-				$(vars.next_thumb).html($("<img/>").attr("src", base.options.slides[nextThumb].image));
-
+				if (base.options.slides[nextThumb].seed.indexOf('empty.png') != -1)
+					$(vars.next_thumb).html($("<img/>").attr("src", base.options.slides[nextThumb].seed));
+				else
+					$(vars.next_thumb).html($("<img/>").attr("src", base.options.slides[nextThumb].seed + 's150-c/'));
 			}
 
 
@@ -559,7 +703,7 @@
 
 			// Call theme function for before slide transition
 			if( typeof theme != 'undefined' && typeof theme.beforeAnimation == "function" )
-			{
+				{
 				theme.beforeAnimation('next');
 			}
 
@@ -569,44 +713,44 @@
 				$(vars.slide_list +'> li' ).eq(vars.current_slide).addClass('current-slide');
 			}
 
-		    nextslide.css('visibility','hidden').addClass('activeslide');	// Update active slide
+			nextslide.css('visibility','hidden').addClass('activeslide');	// Update active slide
 
-	    	switch(base.options.transition){
-	    		case 0: case 'none':	// No transition
-	    		    nextslide.css('visibility','visible'); vars.in_animation = false; base.afterAnimation();
-	    		    break;
-	    		case 1: case 'fade':	// Fade
-	    		    nextslide.animate({opacity : 0},0).css('visibility','visible').animate({opacity : 1, avoidTransforms : false}, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    		    break;
-	    		case 2: case 'slideTop':	// Slide Top
-	    		    nextslide.animate({top : -base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    		    break;
-	    		case 3: case 'slideRight':	// Slide Right
-	    			nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    			break;
-	    		case 4: case 'slideBottom': // Slide Bottom
-	    			nextslide.animate({top : base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    			break;
-	    		case 5: case 'slideLeft':  // Slide Left
-	    			nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    			break;
-	    		case 6: case 'carouselRight':	// Carousel Right
-	    			nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+			switch(base.options.transition){
+				case 0: case 'none':	// No transition
+					nextslide.css('visibility','visible'); vars.in_animation = false; base.afterAnimation();
+					break;
+				case 1: case 'fade':	// Fade
+					nextslide.animate({opacity : 0},0).css('visibility','visible').animate({opacity : 1, avoidTransforms : false}, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 2: case 'slideTop':	// Slide Top
+					nextslide.animate({top : -base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 3: case 'slideRight':	// Slide Right
+					nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 4: case 'slideBottom': // Slide Bottom
+					nextslide.animate({top : base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 5: case 'slideLeft':  // Slide Left
+					nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 6: case 'carouselRight':	// Carousel Right
+					nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
 					liveslide.animate({ left: -base.$el.width(), avoidTransforms : false }, base.options.transition_speed );
-	    			break;
-	    		case 7: case 'carouselLeft':   // Carousel Left
-	    			nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 7: case 'carouselLeft':   // Carousel Left
+					nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
 					liveslide.animate({ left: base.$el.width(), avoidTransforms : false }, base.options.transition_speed );
-	    			break;
-	    	}
+					break;
+			}
 
-// DP *I* Si applica a ogni funzione che utrilizza .nextSlide()
-// Cambio url per deeplink
-//window.location.href = '#' + loadSlide;
-window.location.href = '#' + parseInt(vars.current_slide + 1);
-// DP *F*
+			// DP *I* Si applica a ogni funzione che utilizza .nextSlide()
+			// Cambio url per deeplink
+			//window.location.href = '#' + loadSlide;
+			window.location.href = '#' + parseInt(vars.current_slide + 1);
+			// DP *F*
 
-		    return false;
+			return false;
 		};
 
 
@@ -615,20 +759,20 @@ window.location.href = '#' + parseInt(vars.current_slide + 1);
 		base.prevSlide = function(){
 
 			if(vars.in_animation || !api.options.slideshow) return false;		// Abort if currently animating
-				else vars.in_animation = true;		// Otherwise set animation marker
+			else vars.in_animation = true;		// Otherwise set animation marker
 
 			clearInterval(vars.slideshow_interval);	// Stop slideshow
 
 			var slides = base.options.slides,					// Pull in slides array
-				liveslide = base.$el.find('.activeslide');		// Find active slide
-				$('.prevslide').removeClass('prevslide');
-				liveslide.removeClass('activeslide').addClass('prevslide');		// Remove active class & update previous slide
+			liveslide = base.$el.find('.activeslide');		// Find active slide
+			$('.prevslide').removeClass('prevslide');
+			liveslide.removeClass('activeslide').addClass('prevslide');		// Remove active class & update previous slide
 
 			// Get current slide number
 			vars.current_slide == 0 ?  vars.current_slide = base.options.slides.length - 1 : vars.current_slide-- ;
 
-		    var nextslide =  $(base.el+' li:eq('+vars.current_slide+')'),
-		    	prevslide =  base.$el.find('.prevslide');
+			var nextslide =  $(base.el+' li:eq('+vars.current_slide+')'),
+			prevslide =  base.$el.find('.prevslide');
 
 			// If hybrid mode is on drop quality for transition
 			if (base.options.performance == 1) base.$el.removeClass('quality').addClass('speed');
@@ -643,7 +787,12 @@ window.location.href = '#' + parseInt(vars.current_slide + 1);
 				// If links should open in new window
 				var linkTarget = base.options.new_window ? ' target="_blank"' : '';
 				imageLink = (base.options.slides[loadSlide].url) ? "href='" + base.options.slides[loadSlide].url + "'" : "";	// If link exists, build it
-				var img = $('<img src="'+base.options.slides[loadSlide].image+'"/>');
+				// DP *I*
+				var actual_width = "w" + document.getElementById('fuertecontainer').offsetWidth + "/";
+				if (base.options.slides[loadSlide].seed.indexOf('empty.png') != -1) actual_width = '';
+				var address = ('<img src="' + base.options.slides[loadSlide].seed + actual_width + '"/>');
+				var img = $(address);
+				// DP *F*
 
 				img.appendTo(targetList).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading').css('visibility','hidden');
 
@@ -654,16 +803,22 @@ window.location.href = '#' + parseInt(vars.current_slide + 1);
 			};
 
 			// Update thumbnails (if enabled)
-			if (base.options.thumbnail_navigation == 1){
-
+			if (base.options.thumbnail_navigation == 1)
+				{
 				// Load previous thumbnail
 				//prevThumb = loadSlide;
 				loadSlide == 0 ? prevThumb = base.options.slides.length - 1 : prevThumb = loadSlide - 1;
-				$(vars.prev_thumb).html($("<img/>").attr("src", base.options.slides[prevThumb].image));
+				if (base.options.slides[prevThumb].seed.indexOf('empty.png') != -1)
+					$(vars.prev_thumb).html($("<img/>").attr("src", base.options.slides[prevThumb].seed));
+				else
+					$(vars.prev_thumb).html($("<img/>").attr("src", base.options.slides[prevThumb].seed + 's150-c/'));
 
 				// Load next thumbnail
 				vars.current_slide == base.options.slides.length - 1 ? nextThumb = 0 : nextThumb = vars.current_slide + 1;
-				$(vars.next_thumb).html($("<img/>").attr("src", base.options.slides[nextThumb].image));
+				if (base.options.slides[nextThumb].seed.indexOf('empty.png') != -1)
+					$(vars.next_thumb).html($("<img/>").attr("src", base.options.slides[nextThumb].seed));
+				else
+					$(vars.next_thumb).html($("<img/>").attr("src", base.options.slides[nextThumb].seed + 's150-c/'));
 			}
 
 			/*-----End Load Image-----*/
@@ -671,7 +826,7 @@ window.location.href = '#' + parseInt(vars.current_slide + 1);
 
 			// Call theme function for before slide transition
 			if ( typeof theme != 'undefined' && typeof theme.beforeAnimation == "function" )
-			{
+				{
 				theme.beforeAnimation('prev');
 			}
 
@@ -681,42 +836,42 @@ window.location.href = '#' + parseInt(vars.current_slide + 1);
 				$(vars.slide_list +'> li' ).eq(vars.current_slide).addClass('current-slide');
 			}
 
-		    nextslide.css('visibility','hidden').addClass('activeslide');	// Update active slide
+			nextslide.css('visibility','hidden').addClass('activeslide');	// Update active slide
 
-		    switch(base.options.transition){
-	    		case 0: case 'none':	// No transition
-	    		    nextslide.css('visibility','visible'); vars.in_animation = false; base.afterAnimation();
-	    		    break;
-	    		case 1: case 'fade':	// Fade
-	    		  	nextslide.animate({opacity : 0},0).css('visibility','visible').animate({opacity : 1, avoidTransforms : false}, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    		    break;
-	    		case 2: case 'slideTop':	// Slide Top (reverse)
-	    		    nextslide.animate({top : base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    		    break;
-	    		case 3: case 'slideRight':	// Slide Right (reverse)
-	    			nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    			break;
-	    		case 4: case 'slideBottom': // Slide Bottom (reverse)
-	    			nextslide.animate({top : -base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    			break;
-	    		case 5: case 'slideLeft':  // Slide Left (reverse)
-	    			nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
-	    			break;
-	    		case 6: case 'carouselRight':	// Carousel Right (reverse)
-	    			nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+			switch(base.options.transition){
+				case 0: case 'none':	// No transition
+					nextslide.css('visibility','visible'); vars.in_animation = false; base.afterAnimation();
+					break;
+				case 1: case 'fade':	// Fade
+					nextslide.animate({opacity : 0},0).css('visibility','visible').animate({opacity : 1, avoidTransforms : false}, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 2: case 'slideTop':	// Slide Top (reverse)
+					nextslide.animate({top : base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 3: case 'slideRight':	// Slide Right (reverse)
+					nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 4: case 'slideBottom': // Slide Bottom (reverse)
+					nextslide.animate({top : -base.$el.height()}, 0 ).css('visibility','visible').animate({ top:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 5: case 'slideLeft':  // Slide Left (reverse)
+					nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 6: case 'carouselRight':	// Carousel Right (reverse)
+					nextslide.animate({left : -base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
 					liveslide.animate({left : 0}, 0 ).animate({ left: base.$el.width(), avoidTransforms : false}, base.options.transition_speed );
-	    			break;
-	    		case 7: case 'carouselLeft':   // Carousel Left (reverse)
-	    			nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
+					break;
+				case 7: case 'carouselLeft':   // Carousel Left (reverse)
+					nextslide.animate({left : base.$el.width()}, 0 ).css('visibility','visible').animate({ left:0, avoidTransforms : false }, base.options.transition_speed, function(){ base.afterAnimation(); });
 					liveslide.animate({left : 0}, 0 ).animate({ left: -base.$el.width(), avoidTransforms : false }, base.options.transition_speed );
-	    			break;
-	    	}
-// DP *I* Si applica a ogni funzione che utrilizza .nextSlide()
-// Cambio url per deeplink
-//window.location.href = '#' + loadSlide;
-window.location.href = '#' + parseInt(vars.current_slide + 1);
-// DP *F*
-		    return false;
+					break;
+			}
+			// DP *I* Si applica a ogni funzione che utilizza .nextSlide()
+			// Cambio url per deeplink
+			//window.location.href = '#' + loadSlide;
+			window.location.href = '#' + parseInt(vars.current_slide + 1);
+			// DP *F*
+			return false;
 		};
 
 
@@ -734,33 +889,37 @@ window.location.href = '#' + parseInt(vars.current_slide + 1);
 				if( typeof theme != 'undefined' && typeof theme.playToggle == "function" ) theme.playToggle('play');
 
 				// Resume slideshow
-	        	vars.slideshow_interval = setInterval(base.nextSlide, base.options.slide_interval);
+				vars.slideshow_interval = setInterval(base.nextSlide, base.options.slide_interval);
 
-        	}else{
+			}else{
 
-        		vars.is_paused = true;
+				vars.is_paused = true;
 
-        		// Call theme function for pause
-        		if( typeof theme != 'undefined' && typeof theme.playToggle == "function" ) theme.playToggle('pause');
+				// Call theme function for pause
+				if( typeof theme != 'undefined' && typeof theme.playToggle == "function" ) theme.playToggle('pause');
 
-        		// Stop slideshow
-        		clearInterval(vars.slideshow_interval);
+				// Stop slideshow
+				clearInterval(vars.slideshow_interval);
 
-       		}
+			}
 
-		    return false;
+			return false;
 
-    	};
+		};
 
 
-    	/* Go to specific slide
+		/* Go to specific slide
 		----------------------------*/
-    	base.goTo = function(targetSlide){
+		base.goTo = function(targetSlide){
 
-// DP *I* Si applica a ogni funzione che utrilizza api.goTo()
-// Cambio url per deeplink
-window.location.href = '#' + targetSlide;
-// DP *F*
+			// DP *I* Si applica a ogni funzione che utilizza api.goTo()
+			// Cambio url per deeplink
+			window.location.href = '#' + targetSlide;
+			/*
+			var container = document.getElementById('fuertecontainer');
+			container.style.height = "490px";
+			*/
+			// DP *F*
 
 			if (vars.in_animation || !api.options.slideshow) return false;		// Abort if currently animating
 
@@ -794,13 +953,13 @@ window.location.href = '#' + targetSlide;
 				vars.update_images = 'next';
 				base._placeSlide(vars.update_images);
 
-			//Otherwise it's before current position
+				//Otherwise it's before current position
 			}else if(totalSlides - targetSlide < vars.current_slide){
 
 				// Adjust for new prev slide
 				vars.current_slide = totalSlides-targetSlide+1;
 				vars.update_images = 'prev';
-			    base._placeSlide(vars.update_images);
+				base._placeSlide(vars.update_images);
 
 			}
 
@@ -810,7 +969,7 @@ window.location.href = '#' + targetSlide;
 				$(vars.slide_list +'> li').eq((totalSlides-targetSlide)).addClass('current-slide');
 			}
 
-			if (base.options.thumb_links){
+			if (base.options.thumb_links && ($(window).width() >= 768)) {
 				$(vars.thumb_list +'> .current-thumb').removeClass('current-thumb');
 				$(vars.thumb_list +'> li').eq((totalSlides-targetSlide)).addClass('current-thumb');
 			}
@@ -818,9 +977,9 @@ window.location.href = '#' + targetSlide;
 		};
 
 
-        /* Place Slide
+		/* Place Slide
 		----------------------------*/
-        base._placeSlide = function(place){
+		base._placeSlide = function(place){
 
 			// If links should open in new window
 			var linkTarget = base.options.new_window ? ' target="_blank"' : '';
@@ -838,8 +997,12 @@ window.location.href = '#' + targetSlide;
 					var linkTarget = base.options.new_window ? ' target="_blank"' : '';
 
 					imageLink = (base.options.slides[loadSlide].url) ? "href='" + base.options.slides[loadSlide].url + "'" : "";	// If link exists, build it
-					var img = $('<img src="'+base.options.slides[loadSlide].image+'"/>');
-
+					// DP *I*
+					var actual_width = "w" + document.getElementById('fuertecontainer').offsetWidth + "/";
+					if (base.options.slides[loadSlide].seed.indexOf('empty.png') != -1) actual_width = '';
+					var address = ('<img src="' + base.options.slides[loadSlide].seed + actual_width + '"/>');
+					var img = $(address);
+					// DP *F*
 					img.appendTo(targetList).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading').css('visibility','hidden');
 
 					img.load(function(){
@@ -861,8 +1024,12 @@ window.location.href = '#' + targetSlide;
 					var linkTarget = base.options.new_window ? ' target="_blank"' : '';
 
 					imageLink = (base.options.slides[loadSlide].url) ? "href='" + base.options.slides[loadSlide].url + "'" : "";	// If link exists, build it
-					var img = $('<img src="'+base.options.slides[loadSlide].image+'"/>');
-
+					// DP *I*
+					var actual_width = "w" + document.getElementById('fuertecontainer').offsetWidth + "/";
+					if (base.options.slides[loadSlide].seed.indexOf('empty.png') != -1) actual_width = '';
+					var address = ('<img src="' + base.options.slides[loadSlide].seed + actual_width + '"/>');
+					var img = $(address);
+					// DP *F*
 					img.appendTo(targetList).wrap('<a ' + imageLink + linkTarget + '></a>').parent().parent().addClass('image-loading').css('visibility','hidden');
 
 					img.load(function(){
@@ -889,7 +1056,7 @@ window.location.href = '#' + targetSlide;
 
 			// If hybrid mode is on swap back to higher image quality
 			if (base.options.performance == 1){
-		    	base.$el.removeClass('speed').addClass('quality');
+				base.$el.removeClass('speed').addClass('quality');
 			}
 
 			// Update previous slide
@@ -919,8 +1086,8 @@ window.location.href = '#' + targetSlide;
 			return base.options.slides[vars.current_slide][field];
 		};
 
-        // Make it go!
-        base.init();
+		// Make it go!
+		base.init();
 	};
 
 
@@ -949,7 +1116,7 @@ window.location.href = '#' + targetSlide;
 	----------------------------*/
 	$.supersized.defaultOptions = {
 
-    	// Functionality
+		// Functionality
 		slideshow               :   1,			// Slideshow on/off
 		autoplay				:	1,			// Slideshow starts playing automatically
 		start_slide             :   1,			// Start slide (0 is random)
@@ -979,13 +1146,13 @@ window.location.href = '#' + targetSlide;
 		thumb_links				:	1,			// Individual thumb links for each slide
 		thumbnail_navigation    :   0			// Thumbnail navigation
 
-    };
+	};
 
-    $.fn.supersized = function(options){
-        return this.each(function(){
-            (new $.supersized(options));
-        });
-    };
+	$.fn.supersized = function(options){
+		return this.each(function(){
+			(new $.supersized(options));
+		});
+	};
 
 })(jQuery);
 

@@ -28,28 +28,31 @@ class JFormFieldListGalleries extends JFormFieldList
 
 	protected function getInput()
 	{
-		// Initialize variables.
-		$html = array();
-		$attr = '';
+		$name = basename(realpath(dirname(__FILE__) . "/../.."));
 
-		// Initialize some field attributes.
-		$attr .= $this->element['class'] ? ' class="' . (string) $this->element['class'] . '"' : '';
-		$attr .= $this->element['size'] ? ' size="' . (int) $this->element['size'] . '"' : '';
-
-		// Initialize JavaScript field attributes.
-		$attr .= $this->element['onchange'] ? ' onchange="' . (string) $this->element['onchange'] . '"' : '';
-
-		// Get the field options.
-		$options = (array)$this->getOptions();
-
-		$html[] = '<select name="' . $this->name . '" id="jform_' . $this->fieldname . '" class="listgalleries">';
-		foreach ($options as $option)
+		static $resources = true;
+		if ($resources)
 		{
-			$selected = ($option->value == $this->value["select"]) ? $selected = 'selected="selected"' : "";
-			$html[] = '<option value="' . $option->value . '" class="' . $option->class . '" ' . $selected . '>' . $option->text . '</option>';
+			$resources = false;
+			$document = JFactory::getDocument();
+			// Alternative code: $type = strtolower($this->type);
+			$type = (string)$this->element["type"];
+
+			if (file_exists(JPATH_ADMINISTRATOR . "/components/" . $name . "/js/" . $type . ".js"))
+				$document->addScript(JURI::current() . "?option=" . $name . "&amp;view=loader&amp;type=js&amp;filename=" . $type);
+			if (file_exists(JPATH_ADMINISTRATOR . "/components/" . $name . "/css/" . $type . ".css"))
+				$document->addStyleSheet(JURI::base(true) . "/components/" . $name . "/css/" . $type . ".css");
 		}
-		$html[] = '</select>';
-		return implode($html);
+
+		return
+		'<div id="album_selection">' .
+		parent::getInput() .
+		'<img id="jform_params_' . (string)$this->element["name"] . '_loader" style="display:none;" src="' . JURI::root(true) . '/components/' . $name . '/views/00fuerte/img/progress.gif">' .
+		'<span id="jform_params_' . (string)$this->element["name"] . '_warning" style="display:none;">' . JText::_("COM_OZIOGALLERY3_OUTGOING_CONNECTION_FAILED") . '</span>' .
+		'<span id="jform_params_' . (string)$this->element["name"] . '_selected" style="display:none;">' . $this->value . '</span>' .
+		'</div>';
 	}
+
+
 
 }
